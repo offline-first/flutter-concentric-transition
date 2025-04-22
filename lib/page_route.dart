@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 class ConcentricPageRoute<T> extends PageRoute<T> {
   ConcentricPageRoute({
     required this.builder,
+    this.verticalPosition = .85,
+    this.radius = 30,
+    this.growFactor = 30,
     RouteSettings? settings,
     this.maintainState = true,
     bool fullscreenDialog = false,
@@ -11,6 +14,10 @@ class ConcentricPageRoute<T> extends PageRoute<T> {
 
   /// Builds the primary contents of the route.
   final WidgetBuilder builder;
+
+  final double verticalPosition;
+  final double radius;
+  final double growFactor;
 
   @override
   final bool maintainState;
@@ -67,47 +74,20 @@ class ConcentricPageRoute<T> extends PageRoute<T> {
     Animation<double> secondaryAnimation,
     Widget child,
   ) {
-    //    final PageTransitionsTheme theme = Theme.of(context).pageTransitionsTheme;
-    return _FadeInPageTransition(routeAnimation: animation, child: child);
-  }
 
-  @override
-  String get debugLabel => '${super.debugLabel}(${settings.name})';
-}
-
-class _FadeInPageTransition extends StatelessWidget {
-  _FadeInPageTransition({
-    Key? key,
-    required Animation<double>
-        routeAnimation, // The route's linear 0.0 - 1.0 animation.
-    required this.child,
-  })  : _opacityAnimation = routeAnimation.drive(_easeInTween),
-        super(key: key);
-
-//  // Fractional offset from 1/4 screen below the top to fully on screen.
-//  static final Tween<Offset> _bottomUpTween = Tween<Offset>(
-//    begin: const Offset(0.0, 0.25),
-//    end: Offset.zero,
-//  );
-//  static final Animatable<double> _fastOutSlowInTween =
-//      CurveTween(curve: Curves.fastOutSlowIn);
-  static final Animatable<double> _easeInTween =
-      CurveTween(curve: Curves.easeIn);
-
-  final Animation<double> _opacityAnimation;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-//    return FadeTransition(
-//      opacity: _opacityAnimation,
-//      child: child,
-//    );
     return Container(
       child: ClipPath(
-        clipper: ConcentricClipper(progress: _opacityAnimation.value),
+        clipper: ConcentricClipper(
+          progress: animation.drive(CurveTween(curve: Curves.easeIn)).value,
+          verticalPosition: verticalPosition,
+          radius: radius,
+          growFactor: growFactor,
+        ),
         child: child,
       ),
     );
   }
+
+  @override
+  String get debugLabel => '${super.debugLabel}(${settings.name})';
 }
